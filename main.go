@@ -2,21 +2,29 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
-
-	"github.com/gorilla/mux"
+	"os"
 )
 
 func main() {
-	r := mux.NewRouter()
-	r.Handle("/", http.HandlerFunc(createHandler)).Methods("GET")
+	port := getPort()
+
+	server := &http.Server{
+		Addr: fmt.Sprintf(":%s", port),
+	}
+
+	http.HandleFunc("/", handleWebSocket)
 
 	fmt.Println("Server running on port 4000")
-	log.Fatal(http.ListenAndServe(":4000", r))
+	if err := server.ListenAndServe(); err != nil {
+		fmt.Println(err)
+	}
 }
 
-func createHandler(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Create handler called"))
+func getPort() string {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "4000"
+	}
+	return port
 }
